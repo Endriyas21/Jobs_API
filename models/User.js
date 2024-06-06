@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "please provide name "],
-    maxlength: 59,
+    maxlength: 60,
     minlength: 3,
   },
   email: {
@@ -32,9 +32,13 @@ UserSchema.pre("save", async function () {
 });
 
 UserSchema.methods.createJWT = function () {
-  return jwt.sign({ userID: this.id, name: this.name }, "JWTsecret", {
-    expiresIn: "30d",
-  });
+  return jwt.sign(
+    { userID: this.id, name: this.name },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_LIFETIME,
+    }
+  );
 };
 
 module.exports = mongoose.model("User", UserSchema);
