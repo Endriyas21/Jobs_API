@@ -1,5 +1,5 @@
 const { NotBeforeError } = require("jsonwebtoken");
-const { BadRequestError } = require("../errors");
+const { BadRequestError, NotFoundError } = require("../errors");
 const Job = require("../models/Job");
 const { StatusCodes } = require("http-status-codes");
 
@@ -16,7 +16,10 @@ const getJob = async (req, res) => {
     params: { id: jobId },
   } = req;
   const job = await Job.findOne({ _id: jobId, createdBy: userID });
-  res.send("login user");
+  if (!job) {
+    throw new NotFoundError(`No job with the id ${jobId}`);
+  }
+  res.status(StatusCodes.OK).json({ job });
 };
 
 const createJob = async (req, res) => {
@@ -26,11 +29,35 @@ const createJob = async (req, res) => {
 };
 
 const updateJob = async (req, res) => {
-  res.send("login user");
+  const {
+    body: { company, postion },
+    user: { userId },
+    params: { id: jobId },
+  } = req;
+  if (company === "" || postion === "") {
+    throw new BadRequestError("Company or Position cannot be empty");
+  }
+  const job = await Job.findByIdAndUpdate(
+    { _id: jobId, createdBy: userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 };
 
 const deleteJob = async (req, res) => {
-  res.send("login user");
+  const {
+    user: { userID },
+    params: { id: JobId },
+  } = req;
+
+  const job = await Job.findByIdAndRemove({ _id: jobId, createdBy: userId });
+  if (!job) {
+    throw new NotFoundError(`No job with id {jobId}`);
+  }
+  res.status(StatusCodes.OK).send();
 };
 
 module.exports = { getAllJobs, getJob, createJob, updateJob, deleteJob };
