@@ -1,13 +1,28 @@
+const { NotBeforeError } = require("jsonwebtoken");
+const { BadRequestError } = require("../errors");
+const Job = require("../models/Job");
+const { StatusCodes } = require("http-status-codes");
+
 const getAllJobs = async (req, res) => {
-  res.send("user register");
+  const jobs = await Jobs.find({ createdBy: req.user.userID }).sort(
+    "createdAt"
+  );
+  res.status(StatusCodes.OK).json({ jobs, count: jobs.length });
 };
 
 const getJob = async (req, res) => {
+  const {
+    user: { userID },
+    params: { id: jobId },
+  } = req;
+  const job = await Job.findOne({ _id: jobId, createdBy: userID });
   res.send("login user");
 };
 
 const createJob = async (req, res) => {
-  res.json(req.body);
+  req.body.createdBy = req.body.userID;
+  const job = await Job.create(req.body);
+  res.status(StatusCodes.CREATED).json({ job });
 };
 
 const updateJob = async (req, res) => {
