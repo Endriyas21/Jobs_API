@@ -1,4 +1,3 @@
-const { NotBeforeError } = require("jsonwebtoken");
 const { BadRequestError, NotFoundError } = require("../errors");
 const Job = require("../models/Job");
 const { StatusCodes } = require("http-status-codes");
